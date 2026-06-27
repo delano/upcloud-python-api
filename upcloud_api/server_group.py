@@ -38,7 +38,14 @@ class ServerGroup(UpCloudResource):
         }
 
         if hasattr(self, 'anti_affinity'):
-            body['anti_affinity'] = f"{self.anti_affinity}"
+            # ServerGroupAffinityPolicy is a (str, Enum); on Python >= 3.11
+            # str()/format() yields the member repr ("ServerGroupAffinityPolicy.
+            # STRICT_ANTI_AFFINITY") rather than the wire value, so serialize the
+            # enum's .value ("strict"/"yes"/"no") explicitly.
+            affinity = self.anti_affinity
+            if isinstance(affinity, ServerGroupAffinityPolicy):
+                affinity = affinity.value
+            body['anti_affinity'] = affinity
 
         if hasattr(self, 'servers'):
             servers = []
